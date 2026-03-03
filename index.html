@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Claude Blast — Financial Advisor</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<div id="app">
+  <header class="app-header">
+    <h1>Claude <span class="accent">Blast</span></h1>
+    <p class="app-subtitle">Your personal financial advisor</p>
+  </header>
+
+  <!-- Month reset banner (hidden by default) -->
+  <div id="reset-banner" class="reset-banner hidden">
+    New month started — budget has been reset. Your portfolio data is unchanged.
+    <button class="banner-close" id="banner-close">✕</button>
+  </div>
+
+  <!-- Tab Navigation -->
+  <nav class="tab-nav">
+    <button class="tab-btn active" data-tab="budget">Budget</button>
+    <button class="tab-btn" data-tab="portfolio">Portfolio</button>
+    <button class="tab-btn" data-tab="advisor">Advisor</button>
+  </nav>
+
+  <!-- ══════════════════════════════════════════
+       BUDGET SECTION
+  ══════════════════════════════════════════ -->
+  <section id="tab-budget" class="section active">
+
+    <!-- Summary Cards -->
+    <div class="summary-grid" id="budget-summary-grid">
+      <div class="summary-card">
+        <span class="summary-value green" id="budget-income">$0</span>
+        <span class="summary-label">Income</span>
+      </div>
+      <div class="summary-card">
+        <span class="summary-value red" id="budget-expenses">$0</span>
+        <span class="summary-label">Expenses</span>
+      </div>
+      <div class="summary-card">
+        <span class="summary-value" id="budget-remaining">$0</span>
+        <span class="summary-label">Remaining</span>
+      </div>
+      <div class="summary-card">
+        <span class="summary-value purple" id="budget-target-display">Not set</span>
+        <span class="summary-label">Monthly Target</span>
+      </div>
+    </div>
+
+    <!-- Spending bar -->
+    <div class="card" id="budget-bar-card">
+      <div class="section-title">Spending vs Target</div>
+      <div class="spend-bar-track">
+        <div class="spend-bar-fill" id="spend-bar-fill"></div>
+      </div>
+      <div class="spend-bar-labels">
+        <span id="spend-bar-left">$0 spent</span>
+        <span id="spend-bar-right">$0 target</span>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <!-- Add Transaction Form -->
+      <div class="card">
+        <div class="section-title">Add Transaction</div>
+        <form id="transaction-form">
+          <div class="form-row">
+            <label>Type</label>
+            <div class="radio-group">
+              <label class="radio-label">
+                <input type="radio" name="tx-type" value="income" checked /> Income
+              </label>
+              <label class="radio-label">
+                <input type="radio" name="tx-type" value="expense" /> Expense
+              </label>
+            </div>
+          </div>
+          <div class="form-row">
+            <label for="tx-amount">Amount ($)</label>
+            <input type="number" id="tx-amount" placeholder="0.00" min="0.01" step="0.01" required />
+          </div>
+          <div class="form-row">
+            <label for="tx-category">Category</label>
+            <select id="tx-category">
+              <option value="Food">Food</option>
+              <option value="Transport">Transport</option>
+              <option value="Housing">Housing</option>
+              <option value="Entertainment">Entertainment</option>
+              <option value="Savings">Savings</option>
+              <option value="Healthcare">Healthcare</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label for="tx-desc">Description</label>
+            <input type="text" id="tx-desc" placeholder="e.g. Grocery run" maxlength="60" />
+          </div>
+          <button type="submit" class="btn-primary">Add Transaction</button>
+        </form>
+
+        <div class="form-divider"></div>
+
+        <div class="section-title">Monthly Target</div>
+        <form id="target-form">
+          <div class="form-row">
+            <label for="target-amount">Spending limit ($)</label>
+            <input type="number" id="target-amount" placeholder="e.g. 3000" min="1" step="1" />
+          </div>
+          <button type="submit" class="btn-secondary">Set Target</button>
+        </form>
+      </div>
+
+      <!-- Category Breakdown -->
+      <div class="card">
+        <div class="section-title">Category Breakdown</div>
+        <div id="category-bars"></div>
+      </div>
+    </div>
+
+    <!-- Transaction List -->
+    <div class="card">
+      <div class="section-title-row">
+        <div class="section-title">Transactions <span class="month-label" id="month-label"></span></div>
+        <button class="btn-ghost btn-small" id="clear-transactions-btn">Clear All</button>
+      </div>
+      <ul id="transaction-list" class="transaction-list">
+        <li class="empty-state">No transactions yet — add one above.</li>
+      </ul>
+    </div>
+
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       PORTFOLIO SECTION
+  ══════════════════════════════════════════ -->
+  <section id="tab-portfolio" class="section">
+
+    <!-- Summary Cards -->
+    <div class="summary-grid">
+      <div class="summary-card">
+        <span class="summary-value purple" id="port-total-value">$0</span>
+        <span class="summary-label">Total Value</span>
+      </div>
+      <div class="summary-card">
+        <span class="summary-value" id="port-total-gain">$0</span>
+        <span class="summary-label">Total Gain / Loss</span>
+      </div>
+      <div class="summary-card">
+        <span class="summary-value" id="port-gain-pct">0%</span>
+        <span class="summary-label">Return %</span>
+      </div>
+      <div class="summary-card">
+        <span class="summary-value" id="port-holdings-count">0</span>
+        <span class="summary-label">Holdings</span>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <!-- Add Holding Form -->
+      <div class="card">
+        <div class="section-title">Add Holding</div>
+        <form id="holding-form">
+          <div class="form-row">
+            <label for="holding-ticker">Ticker Symbol</label>
+            <input type="text" id="holding-ticker" placeholder="e.g. AAPL" maxlength="10" required />
+          </div>
+          <div class="form-row">
+            <label for="holding-shares">Shares</label>
+            <input type="number" id="holding-shares" placeholder="e.g. 10" min="0.0001" step="any" required />
+          </div>
+          <div class="form-row">
+            <label for="holding-buy">Purchase Price ($)</label>
+            <input type="number" id="holding-buy" placeholder="per share" min="0.01" step="0.01" required />
+          </div>
+          <div class="form-row">
+            <label for="holding-current">Current Price ($)</label>
+            <input type="number" id="holding-current" placeholder="per share" min="0.01" step="0.01" required />
+          </div>
+          <button type="submit" class="btn-primary">Add Holding</button>
+        </form>
+      </div>
+
+      <!-- Pie Chart -->
+      <div class="card chart-card">
+        <div class="section-title">Allocation</div>
+        <div class="chart-wrap">
+          <canvas id="portfolio-chart" width="220" height="220"></canvas>
+        </div>
+        <div id="chart-legend" class="chart-legend"></div>
+        <div id="chart-empty" class="empty-state">Add holdings to see allocation.</div>
+      </div>
+    </div>
+
+    <!-- Holdings Table -->
+    <div class="card">
+      <div class="section-title">Holdings</div>
+      <div class="table-wrap">
+        <table id="holdings-table" class="holdings-table">
+          <thead>
+            <tr>
+              <th>Ticker</th>
+              <th>Shares</th>
+              <th>Buy Price</th>
+              <th>Current</th>
+              <th>Value</th>
+              <th>Gain / Loss</th>
+              <th>Alloc</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="holdings-tbody">
+            <tr><td colspan="8" class="empty-state">No holdings yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       ADVISOR SECTION
+  ══════════════════════════════════════════ -->
+  <section id="tab-advisor" class="section">
+    <div class="advisor-wrap">
+      <div class="card advisor-card">
+        <div class="section-title">AI Financial Advisor</div>
+        <div id="chat-messages" class="chat-messages"></div>
+      </div>
+      <div class="chat-input-bar">
+        <input type="text" id="chat-input" placeholder="Ask me anything about your finances…" maxlength="300" />
+        <button class="btn-primary chat-send" id="chat-send-btn">Send</button>
+      </div>
+    </div>
+  </section>
+
+</div><!-- /#app -->
+
+<!-- Toast notification -->
+<div id="toast" class="toast hidden"></div>
+
+<!-- Scripts in dependency order -->
+<script src="js/storage.js"></script>
+<script src="js/budget.js"></script>
+<script src="js/portfolio.js"></script>
+<script src="js/advisor.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
